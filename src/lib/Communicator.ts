@@ -98,10 +98,6 @@ export class Communicator {
     closePopup(this.popup);
     this.popup = null;
 
-    // this.listeners.forEach(({ reject }, listener) => {
-    //   reject(new Error("Request rejected"));
-    //   window.removeEventListener("message", listener);
-    // });
     this.listeners.clear();
   };
 
@@ -121,7 +117,6 @@ export class Communicator {
       .then(() => {
         console.log("Popup unloaded");
         this.disconnect();
-        // window.parent.postMessage({ event: "PopupUnload" }, "*");
         closeThisPopup();
       })
       .catch(() => {});

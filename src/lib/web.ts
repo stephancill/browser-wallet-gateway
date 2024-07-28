@@ -27,6 +27,7 @@ export function closePopup(popup: Window | null) {
 
 export function closeThisPopup() {
   console.log("Closing this popup");
+  window.opener.postMessage({ event: "PopupUnload" }, "*");
   const parent = window.self;
   parent.opener = window.self;
   parent.close();

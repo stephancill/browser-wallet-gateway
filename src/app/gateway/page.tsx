@@ -11,6 +11,8 @@ export default function Home() {
   const [communicator, setCommunicator] = useState<Communicator | null>(null);
 
   useEffect(() => {
+    window.addEventListener("beforeunload", closeThisPopup, false);
+
     if (!communicator) return;
 
     const handler = async (m: MessageEvent) => {
@@ -43,6 +45,7 @@ export default function Home() {
     return () => {
       console.log("Removed event listener");
       window.removeEventListener("message", handler);
+      window.removeEventListener("beforeunload", closeThisPopup);
     };
   }, [communicator]);
 
