@@ -93,7 +93,7 @@ export class Communicator {
   /**
    * Closes the popup, rejects all requests and clears the listeners
    */
-  private disconnect = () => {
+  public disconnect = () => {
     // Note: keys popup handles closing itself. this is a fallback.
     closePopup(this.popup);
     this.popup = null;
@@ -115,7 +115,6 @@ export class Communicator {
 
     this.onMessage<ConfigMessage>(({ event }) => event === "PopupUnload")
       .then(() => {
-        console.log("Popup unloaded");
         this.disconnect();
         closeThisPopup();
       })
