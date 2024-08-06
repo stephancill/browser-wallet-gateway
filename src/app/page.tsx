@@ -1,14 +1,10 @@
 "use client";
 
 import { ManageWalletView } from "../components/ManageWalletView";
-import { useWalletUrl } from "../providers/WalletUrlProvider";
 
 export default function Page() {
-  const { walletUrl } = useWalletUrl();
   return (
-    <div>
-      <h1>Configure Gateway</h1>
-      <div>Wallet URL: {walletUrl}</div>
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 dark:bg-gray-900 transition-colors duration-300">
       <ManageWalletView />
     </div>
   );

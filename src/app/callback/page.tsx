@@ -6,10 +6,12 @@ import { ManageWalletView } from "../../components/ManageWalletView";
 import { Communicator } from "../../lib/Communicator";
 import { replacer, reviver } from "../../lib/json";
 import { useWalletUrl } from "../../providers/WalletUrlProvider";
+import ContinueView from "../../components/ContinueView";
 
 export default function Home() {
   const { walletUrl } = useWalletUrl();
   const [communicator, setCommunicator] = useState<Communicator | null>(null);
+  const [showSettings, setShowSettings] = useState(false);
 
   const params = useSearchParams();
   const messageRaw = params.get("message");
@@ -77,20 +79,13 @@ export default function Home() {
   }, [handleMessage]);
 
   return (
-    <div>
-      <h1>Open Wallet Gateway</h1>
-      <p>Gateway for browser wallets</p>
-      <ManageWalletView></ManageWalletView>
-      <button
-        onClick={() => {
-          handleMessage();
-        }}
-      >
-        Continue
-      </button>
-      {messageRaw && (
-        <pre>{JSON.stringify(JSON.parse(messageRaw, reviver), null, 2)}</pre>
-      )}
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 dark:bg-gray-900 transition-colors duration-300">
+      <ContinueView
+        showSettings={showSettings}
+        setShowSettings={setShowSettings}
+        walletUrl={walletUrl}
+        handleContinue={handleMessage}
+      />
     </div>
   );
 }

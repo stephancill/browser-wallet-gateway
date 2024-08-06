@@ -3,6 +3,7 @@ const config = {
   plugins: {
     tailwindcss: {},
   },
+  darkMode: "media",
 };
 
 export default config;

@@ -5,11 +5,13 @@ import { Communicator } from "../../lib/Communicator";
 import { closeThisPopup } from "../../lib/web";
 import { ManageWalletView } from "../../components/ManageWalletView";
 import { useWalletUrl } from "../../providers/WalletUrlProvider";
+import ContinueView from "../../components/ContinueView";
 
 export default function Home() {
   const { walletUrl } = useWalletUrl();
   const [communicator, setCommunicator] = useState<Communicator | null>(null);
   const [message, setMessage] = useState<MessageEvent | null>(null);
+  const [showSettings, setShowSettings] = useState(false);
 
   const handleMessage = useCallback(
     async (message: MessageEvent) => {
@@ -77,20 +79,14 @@ export default function Home() {
 
   return (
     <div>
-      <h1>Open Wallet Gateway</h1>
-      <p>Gateway for browser wallets</p>
-      <ManageWalletView></ManageWalletView>
-      {message ? (
-        <button onClick={() => handleMessage(message)}>Continue</button>
-      ) : (
-        <button
-          onClick={() => {
-            enable();
-          }}
-        >
-          Enable
-        </button>
-      )}
+      <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 dark:bg-gray-900 transition-colors duration-300">
+        <ContinueView
+          showSettings={showSettings || !walletUrl}
+          setShowSettings={setShowSettings}
+          walletUrl={walletUrl}
+          handleContinue={() => enable()}
+        />
+      </div>
     </div>
   );
 }
