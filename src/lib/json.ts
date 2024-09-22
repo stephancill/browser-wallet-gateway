@@ -1,8 +1,8 @@
 export function replacer(key: string, value: any): any {
   if (value instanceof Uint8Array) {
-    return { type: "Uint8Array", data: Array.from(value) };
+    return Buffer.from(value).toString("hex");
   } else if (value instanceof ArrayBuffer) {
-    return { type: "Uint8Array", data: Array.from(new Uint8Array(value)) };
+    return Buffer.from(value).toString("hex");
   }
   return value;
 }

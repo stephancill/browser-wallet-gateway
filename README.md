@@ -1,6 +1,6 @@
 # Browser Wallet Gateway
 
-This is a simple gateway that forwards tracks a preferred browser wallet and forwards messages from the app to the wallet and vice versa.
+This is a simple gateway that forwards tracks a preferred browser wallet and forwards messages from the app to the wallet and vice versa. It also supports Mobile Wallet Protocol for connecting to wallets from mobile apps.
 
 ## Development
 

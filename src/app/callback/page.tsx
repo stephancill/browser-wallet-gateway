@@ -2,11 +2,10 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
-import { ManageWalletView } from "../../components/ManageWalletView";
-import { Communicator } from "../../lib/Communicator";
-import { replacer, reviver } from "../../lib/json";
-import { useWalletUrl } from "../../providers/WalletUrlProvider";
 import ContinueView from "../../components/ContinueView";
+import { Communicator } from "../../lib/Communicator";
+import { replacer } from "../../lib/json";
+import { useWalletUrl } from "../../providers/WalletUrlProvider";
 
 export default function Home() {
   const { walletUrl } = useWalletUrl();
@@ -14,8 +13,14 @@ export default function Home() {
   const [showSettings, setShowSettings] = useState(false);
 
   const params = useSearchParams();
-  const messageRaw = params.get("message");
-  const callbackUrl = params.get("callbackUrl");
+
+  const id = JSON.parse(params.get("id") || "");
+  const sender = JSON.parse(params.get("sender") || "");
+  const sdkVersion = JSON.parse(params.get("sdkVersion") || "");
+  const callbackUrl = JSON.parse(params.get("callbackUrl") || "");
+  const timestamp = JSON.parse(params.get("timestamp") || "");
+  const content = JSON.parse(params.get("content") || "");
+
   const router = useRouter();
 
   const sendMessage = useCallback(
@@ -25,18 +30,38 @@ export default function Home() {
       communicator?.disconnect();
 
       const url = new URL(callbackUrl);
-      url.searchParams.set("message", JSON.stringify(response, replacer));
+
+      for (const [key, value] of Object.entries(response)) {
+        url.searchParams.set(key, JSON.stringify(value, replacer));
+      }
+
       router.push(url.toString());
     },
     [callbackUrl, communicator]
   );
 
   const handleMessage = useCallback(async () => {
-    if (!communicator || !messageRaw || !callbackUrl) {
+    if (!communicator || !callbackUrl) {
       return;
     }
 
-    const message = JSON.parse(messageRaw, reviver);
+    const message = {
+      id,
+      sender,
+      sdkVersion,
+      timestamp,
+      content,
+    };
+
+    if ("encrypted" in message.content) {
+      const encrypted = message.content.encrypted;
+      message.content = {
+        encrypted: {
+          iv: new Uint8Array(Buffer.from(encrypted.iv, "hex")),
+          cipherText: new Uint8Array(Buffer.from(encrypted.cipherText, "hex")),
+        },
+      };
+    }
 
     const signerSelectTypeMessage = {
       id: crypto.randomUUID(),
@@ -44,13 +69,7 @@ export default function Home() {
       data: "scw",
     };
 
-    if (message.data.event === "selectSignerType") {
-      // Forward message to the wallet and wait for response
-      let response = await communicator.postRequestAndWaitForResponse(
-        message.data
-      );
-      return sendMessage(response);
-    } else if (message.data.content.handshake) {
+    if (message.content.handshake) {
       // The handshake needs to happen directly after the selectSignerType message
       // Get message from local storage
       // @ts-ignore -- Type is wrong
@@ -58,12 +77,18 @@ export default function Home() {
     }
 
     // Forward message to the wallet and wait for response
-    let response = await communicator.postRequestAndWaitForResponse(
-      message.data
+    let walletResponse = await communicator.postRequestAndWaitForResponse(
+      message
     );
 
+    // Adapt expected fields and forward response to the app
+    const response = {
+      ...walletResponse,
+      id: walletResponse.requestId,
+      timestamp,
+    };
     return sendMessage(response);
-  }, [communicator, messageRaw, callbackUrl]);
+  }, [communicator, callbackUrl]);
 
   useEffect(() => {
     if (!walletUrl) {
@@ -81,7 +106,7 @@ export default function Home() {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 dark:bg-gray-900 transition-colors duration-300">
       <ContinueView
-        showSettings={showSettings}
+        showSettings={showSettings || !walletUrl}
         setShowSettings={setShowSettings}
         walletUrl={walletUrl}
         handleContinue={handleMessage}
